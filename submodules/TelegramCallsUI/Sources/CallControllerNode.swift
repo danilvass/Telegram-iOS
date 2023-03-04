@@ -1285,7 +1285,7 @@ final class CallControllerNode: ViewControllerTracingNode, CallControllerNodePro
                     
                     self.keyButtonNode.animateIn(rect: .zero)
                     
-                    if !UserDefaults.standard.bool(forKey: "TG_encryption_description_presented111") {
+                    if !UserDefaults.standard.bool(forKey: "TG_encryption_description_presented") {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                             guard let self else { return }
                             self.encryptionDescHintNode.animateIn()
