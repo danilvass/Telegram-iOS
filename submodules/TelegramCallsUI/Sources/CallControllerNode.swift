@@ -522,7 +522,7 @@ final class CallControllerNode: ViewControllerTracingNode, CallControllerNodePro
         self.animatedGradientNode = ASDisplayNode()
         self.hintNode = TextHintNode(text: "Weak network signal", font: Font.with(size: 16.0), isHidden: true)
       
-        let img = generateTintedImage(image: UIImage(bundleImageName: "Call/CallCameraButton"), color: .white)
+        let img = generateTintedImage(image: UIImage(bundleImageName: "Chat/Stickers/SmallLock"), color: .white)
         self.encryptionDescHintNode = TextHintNode(text: "Encryption key of this call", font: Font.with(size: 15.0), radius: 14.0, showTail: true, image: img, isHidden: true)
 
         animatedGradientNode.displaysAsynchronously = false
@@ -1285,7 +1285,7 @@ final class CallControllerNode: ViewControllerTracingNode, CallControllerNodePro
                     
                     self.keyButtonNode.animateIn(rect: .zero)
                     
-                    if !UserDefaults.standard.bool(forKey: "TG_encryption_description_presented") {
+                    if !UserDefaults.standard.bool(forKey: "TG_encryption_description_presented111") {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                             guard let self else { return }
                             self.encryptionDescHintNode.animateIn()
@@ -2767,6 +2767,7 @@ private final class TextHintNode: ASButtonNode {
         if let image {
             self.leftImageNode = ASImageNode()
             leftImageNode?.image = image
+            leftImageNode?.contentMode = .scaleAspectFit
         } else {
             self.leftImageNode = nil
         }
@@ -2796,14 +2797,14 @@ private final class TextHintNode: ASButtonNode {
     func updateLayout(constrainedWidth: CGFloat, insets: UIEdgeInsets) -> CGSize {
         var imageX: CGFloat = 0.0
         if leftImageNode != nil {
-            imageX += 14
+            imageX += 20
         }
         let startY: CGFloat = showTail ? 0.0 : 0.0
         
         let (titleLayout, titleApply) = TextNode.asyncLayout(self.textNode)(TextNodeLayoutArguments(attributedString: NSAttributedString(string: self.text, font: Font.regular(16.0), textColor: .white), backgroundColor: nil, maximumNumberOfLines: 1, truncationType: .end, constrainedSize: CGSize(width: constrainedWidth - imageX, height: CGFloat.greatestFiniteMagnitude), alignment: .center, cutout: nil, insets: insets))
         let _ = titleApply()
         self.textNode.frame = CGRect(origin: CGPoint(x: floor(((constrainedWidth - titleLayout.size.width) / 2.0)) + imageX, y: startY), size: titleLayout.size)
-        self.leftImageNode?.frame = CGRect(x: 16, y: ((titleLayout.size.height / 2) - 10) + startY, width: 9, height: 19)
+        self.leftImageNode?.frame = CGRect(x: 16, y: ((titleLayout.size.height / 2) - 12) + startY, width: 13, height: 22)
         let size = CGSize(width: textNode.frame.width + 16 + 16 + imageX, height: textNode.frame.height + startY)
         btn.frame = .init(origin: .zero, size: size)
         self.tailNode.frame = .init(x: size.width - 20 - 36, y: -3.5, width: 20.0, height: 7.5)
