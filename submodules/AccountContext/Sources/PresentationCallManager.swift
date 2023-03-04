@@ -153,7 +153,7 @@ public protocol PresentationCall: AnyObject {
     func answer()
     func hangUp() -> Signal<Bool, NoError>
     func rejectBusy()
-    
+    func dismissCallScreen()
     func toggleIsMuted()
     func setIsMuted(_ value: Bool)
     func requestVideo()

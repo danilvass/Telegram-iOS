@@ -49,6 +49,10 @@ private class EmojiSlotNode: ASDisplayNode {
         self.containerNode.layer.animatePosition(from: CGPoint(x: 0.0, y: -self.containerNode.frame.height + self.bounds.height), to: CGPoint(), duration: duration, delay: 0.1, timingFunction: kCAMediaTimingFunctionSpring, additive: true)
     }
     
+    func animateIn(duration: Double, from position: CGPoint) {
+        self.layer.animatePosition(from: position, to: self.layer.position, duration: duration)
+    }
+    
     override func layout() {
         super.layout()
         
@@ -105,6 +109,17 @@ final class CallControllerKeyButton: HighlightableButtonNode {
         for node in self.nodes {
             node.animateIn(duration: duration)
             duration += 0.3
+        }
+    }
+    
+    func animateIn(rect: CGRect) {
+        self.layoutIfNeeded()
+        self.containerNode.layer.animateAlpha(from: 0.0, to: 1.0, duration: 0.3)
+        
+        var duration: Double = 0.3
+        for node in self.nodes.reversed() {
+            node.animateIn(duration: duration, from: CGPoint(x: -300.0, y: 0.0))
+            duration += 0.1
         }
     }
     

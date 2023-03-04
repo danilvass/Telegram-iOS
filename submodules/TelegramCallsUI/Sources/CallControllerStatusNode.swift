@@ -4,21 +4,42 @@ import Display
 import AsyncDisplayKit
 import SwiftSignalKit
 
-private let compactNameFont = Font.regular(28.0)
-private let regularNameFont = Font.regular(36.0)
+private let compactNameFont = Font.regular(22.0)
+private let regularNameFont = Font.regular(28.0)
 
-private let compactStatusFont = Font.regular(18.0)
-private let regularStatusFont = Font.regular(18.0)
+private let compactStatusFont = Font.regular(16.0)
+private let regularStatusFont = Font.regular(16.0)
+
+func callDurationString(from duration: Double?) -> String? {
+    guard let duration else { return nil }
+    let d = Int32(CFAbsoluteTimeGetCurrent() - duration)
+    let durationString: String
+    if d > 60 * 60 {
+        durationString = String(format: "%02d:%02d:%02d", arguments: [d / 3600, (d / 60) % 60, d % 60])
+    } else {
+        durationString = String(format: "%02d:%02d", arguments: [(d / 60) % 60, d % 60])
+    }
+    return durationString
+}
 
 enum CallControllerStatusValue: Equatable {
-    case text(string: String, displayLogo: Bool)
+    case text(string: String, displayLogo: UIImage?)
     case timer((String, Bool) -> String, Double)
+    
+    var textValue: String? {
+        switch self {
+        case .text(let string, _):
+            return string
+        case .timer:
+            return nil
+        }
+    }
     
     static func ==(lhs: CallControllerStatusValue, rhs: CallControllerStatusValue) -> Bool {
         switch lhs {
-            case let .text(text, displayLogo):
-                if case .text(text, displayLogo) = rhs {
-                    return true
+            case let .text(lhsText, _):
+                if case let .text(rhsText, _) = rhs {
+                    return lhsText == rhsText
                 } else {
                     return false
                 }
@@ -45,7 +66,7 @@ final class CallControllerStatusNode: ASDisplayNode {
     
     var title: String = ""
     var subtitle: String = ""
-    var status: CallControllerStatusValue = .text(string: "", displayLogo: false) {
+    var status: CallControllerStatusValue = .text(string: "", displayLogo: nil) {
         didSet {
             if self.status != oldValue {
                 self.statusTimer?.invalidate()
@@ -118,7 +139,6 @@ final class CallControllerStatusNode: ASDisplayNode {
         self.receptionNode.alpha = 0.0
         
         self.logoNode = ASImageNode()
-        self.logoNode.image = generateTintedImage(image: UIImage(bundleImageName: "Call/CallTitleLogo"), color: .white)
         self.logoNode.isHidden = true
         
         self.titleActivateAreaNode = AccessibilityAreaNode()
@@ -172,8 +192,9 @@ final class CallControllerStatusNode: ASDisplayNode {
         case let .text(text, displayLogo):
             statusText = text
             statusMeasureText = text
-            statusDisplayLogo = displayLogo
-            if displayLogo {
+            statusDisplayLogo = displayLogo != nil
+            self.logoNode.image = displayLogo
+            if statusDisplayLogo {
                 statusOffset += 10.0
             }
         case let .timer(format, referenceTime):
@@ -211,9 +232,10 @@ final class CallControllerStatusNode: ASDisplayNode {
         self.statusNode.frame = CGRect(origin: CGPoint(x: floor((constrainedWidth - statusMeasureLayout.size.width) / 2.0) + statusOffset, y: 0.0), size: statusLayout.size)
         self.receptionNode.frame = CGRect(origin: CGPoint(x: self.statusNode.frame.minX - receptionNodeSize.width, y: 9.0), size: receptionNodeSize)
         self.logoNode.isHidden = !statusDisplayLogo
-        if let image = self.logoNode.image, let firstLineRect = statusMeasureLayout.linesRects().first {
+        if self.logoNode.image != nil, let firstLineRect = statusMeasureLayout.linesRects().first {
+            let imageSize = CGSize(width: statusLayout.size.height, height: statusLayout.size.height)
             let firstLineOffset = floor((statusMeasureLayout.size.width - firstLineRect.width) / 2.0)
-            self.logoNode.frame = CGRect(origin: CGPoint(x: self.statusNode.frame.minX + firstLineOffset - image.size.width - 7.0, y: 5.0), size: image.size)
+            self.logoNode.frame = CGRect(origin: CGPoint(x: self.statusNode.frame.minX + firstLineOffset - imageSize.width - 7.0, y: 0.0), size: imageSize)
         }
         
         self.titleActivateAreaNode.frame = self.titleNode.frame

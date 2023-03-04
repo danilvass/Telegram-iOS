@@ -166,6 +166,14 @@ final class LegacyCallControllerNode: ASDisplayNode, CallControllerNodeProtocol 
         self.view.addGestureRecognizer(tapRecognizer)
     }
     
+    func resumeAnimations() {
+        
+    }
+    
+    func pauseAnimations() {
+        
+    }
+    
     func updatePeer(accountPeer: Peer, peer: Peer, hasOther: Bool) {
         if !arePeersEqual(self.peer, peer) {
             self.peer = peer
@@ -443,7 +451,15 @@ final class LegacyCallControllerNode: ASDisplayNode, CallControllerNodeProtocol 
     
     @objc func keyPressed() {
         if self.keyPreviewNode == nil, let keyText = self.keyTextData?.1, let peer = self.peer {
-            let keyPreviewNode = CallControllerKeyPreviewNode(keyText: keyText, infoText: self.presentationData.strings.Call_EmojiDescription(EnginePeer(peer).compactDisplayTitle).string.replacingOccurrences(of: "%%", with: "%"), dismiss: { [weak self] in
+            let keyPreviewNode = CallControllerKeyPreviewNode(
+                context: self.call.context,
+                keyText: keyText,
+                titleText: self.presentationData.strings.Call_EmojiTitle,
+                infoText: self.presentationData.strings.Call_EmojiDescription(EnginePeer(peer).compactDisplayTitle).string.replacingOccurrences(of: "%%", with: "%"),
+                emojis: { [weak self] in
+                    self?.call.context.animatedEmojiStickers ?? [:]
+                },
+                dismiss: { [weak self] in
                 if let _ = self?.keyPreviewNode {
                     self?.backPressed()
                 }
@@ -464,7 +480,7 @@ final class LegacyCallControllerNode: ASDisplayNode, CallControllerNodeProtocol 
     @objc func backPressed() {
         if let keyPreviewNode = self.keyPreviewNode {
             self.keyPreviewNode = nil
-            keyPreviewNode.animateOut(to: self.keyButtonNode.frame, toNode: self.keyButtonNode, completion: { [weak self, weak keyPreviewNode] in
+            keyPreviewNode.animateOut(to: self.keyButtonNode.frame, toNode: self.keyButtonNode, completion: { [weak self, weak keyPreviewNode] _ in
                 self?.keyButtonNode.isHidden = false
                 keyPreviewNode?.removeFromSupernode()
             })

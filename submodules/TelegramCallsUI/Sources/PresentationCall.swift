@@ -128,6 +128,11 @@ public final class PresentationCallImpl: PresentationCall {
     private let screencastAudioDataDisposable = MetaDisposable()
     private let screencastStateDisposable = MetaDisposable()
     
+    public func dismissCallScreen() {
+        self.didSetCanBeRemoved = true
+        self.canBeRemovedPromise.set(.single(true) |> delay(0.5, queue: Queue.mainQueue()))
+    }
+    
     init(
         context: AccountContext,
         audioSession: ManagedAudioSession,
@@ -624,8 +629,10 @@ public final class PresentationCallImpl: PresentationCall {
                 }
         }
         var terminating = false
-        if case .terminated = sessionState.state {
+        var shouldRateCall = false
+        if case let .terminated(_, _, options) = sessionState.state {
             terminating = true
+            shouldRateCall = options.contains(.reportRating)
         } else if case .dropping = sessionState.state {
             terminating = true
         }
@@ -633,7 +640,8 @@ public final class PresentationCallImpl: PresentationCall {
         if terminating, !wasTerminated {
             if !self.didSetCanBeRemoved {
                 self.didSetCanBeRemoved = true
-                self.canBeRemovedPromise.set(.single(true) |> delay(2.0, queue: Queue.mainQueue()))
+                let d: Double = shouldRateCall ? 10.0 : 0.5
+                self.canBeRemovedPromise.set(.single(true) |> delay(d, queue: Queue.mainQueue()))
             }
             self.hungUpPromise.set(true)
             if sessionState.isOutgoing {

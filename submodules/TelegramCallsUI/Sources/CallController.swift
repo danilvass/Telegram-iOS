@@ -29,6 +29,9 @@ protocol CallControllerNodeProtocol: AnyObject {
     var dismissedInteractively: (() -> Void)? { get set }
     var dismissAllTooltips: (() -> Void)? { get set }
     
+    func resumeAnimations()
+    func pauseAnimations()
+    
     func updateAudioOutputs(availableOutputs: [AudioSessionOutput], currentOutput: AudioSessionOutput?)
     func updateCallState(_ callState: PresentationCallState)
     func updatePeer(accountPeer: Peer, peer: Peer, hasOther: Bool)
@@ -329,13 +332,13 @@ public final class CallController: ViewController {
             
             self.controllerNode.animateIn()
         }
-        
+        self.controllerNode.resumeAnimations()
         self.idleTimerExtensionDisposable.set(self.sharedContext.applicationBindings.pushIdleTimerExtension())
     }
     
     override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        
+        self.controllerNode.pauseAnimations()
         self.idleTimerExtensionDisposable.set(nil)
     }
     
